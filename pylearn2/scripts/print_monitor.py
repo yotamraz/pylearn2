@@ -34,8 +34,17 @@ def print_monitor(args):
 
 def main():
     """Entry point for the pylearn2-print-monitor console script."""
-    import sys
-    print_monitor(sys.argv[1:])
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="Print the monitor channels of a saved pylearn2 model."
+    )
+    parser.add_argument(
+        "model",
+        nargs="+",
+        help="Path(s) to saved pylearn2 model file(s)."
+    )
+    args = parser.parse_args()
+    print_monitor(args.model)
 
 
 if __name__ == '__main__':
