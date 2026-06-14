@@ -11,6 +11,7 @@ import pytensor
 import pytensor.graph.op
 import pytensor.graph.basic
 import pytensor.tensor
+import pytensor.tensor.elemwise
 import pytensor.gradient
 import pytensor.scalar
 # Delay import of pylearn2.config.yaml_parse and pylearn2.datasets.control
@@ -299,7 +300,7 @@ def gpu_mem_free():
     return cuda.mem_info()[0]/1024./1024
 
 
-class _ElemwiseNoGradient(pytensor.tensor.Elemwise):
+class _ElemwiseNoGradient(pytensor.tensor.elemwise.Elemwise):
     """
     A Theano Op that applies an elementwise transformation and reports
     having no gradient.
