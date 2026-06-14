@@ -7,8 +7,13 @@ import logging
 import warnings
 
 from .general import is_iterable, contains_nan, contains_inf, isfinite
-import theano
-from theano.compat.six.moves import input, zip as izip
+import pytensor
+import pytensor.graph.op
+import pytensor.graph.basic
+import pytensor.tensor
+import pytensor.tensor.elemwise
+import pytensor.gradient
+import pytensor.scalar
 # Delay import of pylearn2.config.yaml_parse and pylearn2.datasets.control
 # to avoid circular imports
 yaml_parse = None
@@ -16,7 +21,6 @@ control = None
 cuda = None
 
 import numpy as np
-from theano.compat import six
 
 from functools import partial
 
@@ -68,10 +72,10 @@ def sharedX(value, name=None, borrow=False, dtype=None):
     """
 
     if dtype is None:
-        dtype = theano.config.floatX
-    return theano.shared(theano._asarray(value, dtype=dtype),
-                         name=name,
-                         borrow=borrow)
+        dtype = pytensor.config.floatX
+    return pytensor.shared(np.asarray(value, dtype=dtype),
+                           name=name,
+                           borrow=borrow)
 
 
 def as_floatX(variable):
@@ -90,12 +94,12 @@ def as_floatX(variable):
     """
 
     if isinstance(variable, float):
-        return np.cast[theano.config.floatX](variable)
+        return np.cast[pytensor.config.floatX](variable)
 
     if isinstance(variable, np.ndarray):
-        return np.cast[theano.config.floatX](variable)
+        return np.cast[pytensor.config.floatX](variable)
 
-    return theano.tensor.cast(variable, theano.config.floatX)
+    return pytensor.tensor.cast(variable, pytensor.config.floatX)
 
 
 def constantX(value):
@@ -110,8 +114,8 @@ def constantX(value):
     -------
     WRITEME
     """
-    return theano.tensor.constant(np.asarray(value,
-                                             dtype=theano.config.floatX))
+    return pytensor.tensor.constant(np.asarray(value,
+                                               dtype=pytensor.config.floatX))
 
 
 def subdict(d, keys):
@@ -147,14 +151,14 @@ def safe_update(dict_to, dict_from):
     -------
     WRITEME
     """
-    for key, val in six.iteritems(dict_from):
+    for key, val in dict_from.items():
         if key in dict_to:
             raise KeyError(key)
         dict_to[key] = val
     return dict_to
 
 
-class CallbackOp(theano.gof.Op):
+class CallbackOp(pytensor.graph.op.Op):
     """
     A Theano Op that implements the identity transform but also does an
     arbitrary (user-specified) side effect.
@@ -175,7 +179,7 @@ class CallbackOp(theano.gof.Op):
             WRITEME
         """
         xout = xin.type.make_variable()
-        return theano.gof.Apply(op=self, inputs=[xin], outputs=[xout])
+        return pytensor.graph.basic.Apply(op=self, inputs=[xin], outputs=[xout])
 
     def perform(self, node, inputs, output_storage):
         """
@@ -275,7 +279,7 @@ def safe_zip(*args):
 def safe_izip(*args):
     """Like izip, but ensures arguments are of same length"""
     assert all([len(arg) == len(args[0]) for arg in args])
-    return izip(*args)
+    return zip(*args)
 
 
 def gpu_mem_free():
@@ -285,15 +289,23 @@ def gpu_mem_free():
     Returns
     -------
     megs_free : float
-        Number of megabytes of memory free on the GPU used by Theano
+        Number of megabytes of memory free on the GPU used by PyTensor
+
+    Raises
+    ------
+    NotImplementedError
+        PyTensor's GPU backend does not expose a direct mem_info() API.
+        Use pytensor.config.device and GPU-specific tooling instead.
     """
-    global cuda
-    if cuda is None:
-        from theano.sandbox import cuda
-    return cuda.mem_info()[0]/1024./1024
+    raise NotImplementedError(
+        "gpu_mem_free() is not available under PyTensor. "
+        "The theano.sandbox.cuda API no longer exists. "
+        "Use PyTensor's native GPU backend (pytensor.config.device='cuda') "
+        "and GPU-specific memory utilities instead."
+    )
 
 
-class _ElemwiseNoGradient(theano.tensor.Elemwise):
+class _ElemwiseNoGradient(pytensor.tensor.elemwise.Elemwise):
     """
     A Theano Op that applies an elementwise transformation and reports
     having no gradient.
@@ -320,7 +332,7 @@ class _ElemwiseNoGradient(theano.tensor.Elemwise):
         inputs : WRITEME
         output_gradients : WRITEME
         """
-        return [theano.gradient.DisconnectedType()()]
+        return [pytensor.gradient.DisconnectedType()()]
 
 # Call this on a theano variable to make a copy of that variable
 # No gradient passes through the copying operation
@@ -328,7 +340,7 @@ class _ElemwiseNoGradient(theano.tensor.Elemwise):
 # my_copy in as part of consider_constant to tensor.grad
 # However, this version doesn't require as much long range
 # communication between parts of the code
-block_gradient = _ElemwiseNoGradient(theano.scalar.identity)
+block_gradient = _ElemwiseNoGradient(pytensor.scalar.identity)
 
 def is_block_gradient(op):
     """
@@ -378,7 +390,7 @@ def function(*args, **kwargs):
     Almost no part of pylearn2 can assume that an unused input is an error, so
     the default from theano is inappropriate for this project.
     """
-    return theano.function(*args, on_unused_input='ignore', **kwargs)
+    return pytensor.function(*args, on_unused_input='ignore', **kwargs)
 
 
 def grad(*args, **kwargs):
@@ -387,19 +399,15 @@ def grad(*args, **kwargs):
     error. Almost no part of pylearn2 can assume that a disconnected input
     is an error.
     """
-    return theano.gradient.grad(*args, disconnected_inputs='ignore', **kwargs)
+    return pytensor.gradient.grad(*args, disconnected_inputs='ignore', **kwargs)
 
 
 # Groups of Python types that are often used together in `isinstance`
-if six.PY3:
-    py_integer_types = (int, np.integer)
-    py_number_types = (int, float, complex, np.number)
-else:
-    py_integer_types = (int, long, np.integer)  # noqa
-    py_number_types = (int, long, float, complex, np.number)  # noqa
+py_integer_types = (int, np.integer)
+py_number_types = (int, float, complex, np.number)
 
 py_float_types = (float, np.floating)
-py_complex_types = (complex, np.complex)
+py_complex_types = (complex, np.complex128)
 
 
 def get_choice(choice_to_explanation):
@@ -453,15 +461,15 @@ def float32_floatX(f):
 
             WRITEME
         """
-        old_floatX = theano.config.floatX
-        theano.config.floatX = 'float32'
+        old_floatX = pytensor.config.floatX
+        pytensor.config.floatX = 'float32'
         try:
             f(*args, **kwargs)
         finally:
-            theano.config.floatX = old_floatX
+            pytensor.config.floatX = old_floatX
 
     # If we don't do that, tests function won't be run.
-    new_f.func_name = f.func_name
+    new_f.__name__ = f.__name__
     return new_f
 
 

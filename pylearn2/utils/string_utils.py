@@ -3,9 +3,6 @@
 import os
 import re
 
-from theano.compat.six import string_types
-from theano.compat.six.moves import xrange
-
 from pylearn2.utils.exc import EnvironmentVariableError, NoDataPathError
 from pylearn2.utils.exc import reraise_as
 from pylearn2.utils.python26 import cmp_to_key
@@ -93,7 +90,7 @@ def find_number(s):
         number found otherwise.
     """
 
-    r = re.search('[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?', s)
+    r = re.search(r'[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?', s)
     if r is not None:
         return r.span(0)
     return None
@@ -168,9 +165,9 @@ def number_aware_alphabetical_cmp(str1, str2):
     i = 0
 
     while i < l:
-        if isinstance(seq1[i], float) and isinstance(seq2[i], string_types):
+        if isinstance(seq1[i], float) and isinstance(seq2[i], str):
             return -1
-        elif isinstance(seq1[i], string_types) and isinstance(seq2[i], float):
+        elif isinstance(seq1[i], str) and isinstance(seq2[i], float):
             return 1
         elif seq1[i] < seq2[i]:
             return -1
@@ -235,7 +232,7 @@ def match(wrong, candidates):
             # Could try to do something smarter
             rval = {}
 
-            for i in xrange(len(w)):
+            for i in range(len(w)):
                 l = w[i]
                 rval[l] = rval.get(l, 0.) + 1.
                 if i < len(w) - 1:

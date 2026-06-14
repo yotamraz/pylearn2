@@ -4,8 +4,6 @@
 
     WRITEME
 """
-from __future__ import print_function
-
 __authors__ = "Ian Goodfellow"
 __copyright__ = "Copyright 2010-2012, Universite de Montreal"
 __credits__ = ["Ian Goodfellow"]
@@ -34,6 +32,20 @@ def print_monitor(args):
             print(key, ':', channels[key].val_record[-1])
 
 
+def main():
+    """Entry point for the pylearn2-print-monitor console script."""
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="Print the monitor channels of a saved pylearn2 model."
+    )
+    parser.add_argument(
+        "model",
+        nargs="+",
+        help="Path(s) to saved pylearn2 model file(s)."
+    )
+    args = parser.parse_args()
+    print_monitor(args.model)
+
+
 if __name__ == '__main__':
-    import sys
-    print_monitor(sys.argv[1:])
+    main()

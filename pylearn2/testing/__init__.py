@@ -8,7 +8,11 @@ __email__ = "pylearn-dev@googlegroups"
 
 import functools
 
-from theano import config
+try:
+    from pytensor import config
+except ImportError:
+    config = None
+
 
 def no_debug_mode(fn):
     """
@@ -21,6 +25,8 @@ def no_debug_mode(fn):
     # returned function as a test.
     @functools.wraps(fn)
     def wrapped(*args, **kwargs):
+        if config is None:
+            return fn(*args, **kwargs)
         orig_mode = config.mode
         if orig_mode in ["DebugMode", "DEBUG_MODE"]:
             config.mode = "FAST_RUN"

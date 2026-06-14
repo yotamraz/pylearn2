@@ -8,8 +8,6 @@ except ImportError:
 import pickle
 import logging
 import numpy as np
-from theano.compat import six
-from theano.compat.six.moves import cPickle, xrange
 import os
 import time
 import warnings
@@ -179,9 +177,9 @@ def _save(filepath, obj):
                 warnings.warn('Warning: .joblib suffix specified but joblib '
                               'unavailable. Using ordinary pickle.')
             with open(filepath, 'wb') as filehandle:
-                cPickle.dump(obj, filehandle, get_pickle_protocol())
+                pickle.dump(obj, filehandle, get_pickle_protocol())
     except Exception as e:
-        logger.exception("cPickle has failed to write an object to "
+        logger.exception("pickle has failed to write an object to "
                          "{0}".format(filepath))
         if str(e).find('maximum recursion depth exceeded') != -1:
             raise
@@ -198,12 +196,12 @@ def _save(filepath, obj):
                     'can be converted to a string'
                 )
                 logger.exception(
-                    'now re-attempting to write with cPickle outside the '
+                    'now re-attempting to write with pickle outside the '
                     'try/catch loop so you can see if it prints anything '
                     'when it dies'
                 )
                 with open(filepath, 'wb') as f:
-                    cPickle.dump(obj, f, get_pickle_protocol())
+                    pickle.dump(obj, f, get_pickle_protocol())
                 logger.info('Somehow or other, the file write worked once '
                             'we quit using the try/catch.')
             else:
@@ -215,10 +213,10 @@ def _save(filepath, obj):
                 reraise_as(IOError(str(obj) +
                                    ' could not be written to ' +
                                    str(filepath) +
-                           ' by cPickle due to ' + str(e) +
+                           ' by pickle due to ' + str(e) +
                                    ' nor by pickle due to ' + str(e2) +
                                    '. \nTraceback ' + tb))
-        logger.warning('{0} was written by pickle instead of cPickle, due to '
+        logger.warning('{0} was written by pickle instead of pickle, due to '
                        '{1} (perhaps your object'
                        ' is really big?)'.format(filepath, e))
 
@@ -238,8 +236,8 @@ def clone_via_serialize(obj):
     obj2 : object
         A copy of the object.
     """
-    s = cPickle.dumps(obj, get_pickle_protocol())
-    return cPickle.loads(s)
+    s = pickle.dumps(obj, get_pickle_protocol())
+    return pickle.loads(s)
 
 
 def to_string(obj):
@@ -256,7 +254,7 @@ def to_string(obj):
     string : str
         The object serialized as a string.
     """
-    return cPickle.dumps(obj, get_pickle_protocol())
+    return pickle.dumps(obj, get_pickle_protocol())
 
 
 def from_string(s):
@@ -273,7 +271,7 @@ def from_string(s):
     obj : object
         The object.
     """
-    return cPickle.loads(s)
+    return pickle.loads(s)
 
 
 def mkdir(filepath):
@@ -319,7 +317,7 @@ def read_int(fin, n=1):
         return struct.unpack('i', s)[0]
     else:
         rval = []
-        for i in xrange(n):
+        for i in range(n):
             rval.append(read_int(fin))
         return rval
 
@@ -495,7 +493,7 @@ def _load(filepath, recurse_depth=0, retry=True):
         assert False
 
     # for loading PY2 pickle in PY3
-    encoding = {'encoding': 'latin-1'} if six.PY3 else {}
+    encoding = {'encoding': 'latin-1'}
 
     def exponential_backoff():
         if recurse_depth > 9:
@@ -504,7 +502,7 @@ def _load(filepath, recurse_depth=0, retry=True):
             logger.info('attempting to open via reading string')
             with open(filepath, 'rb') as f:
                 content = f.read()
-            return cPickle.loads(content, **encoding)
+            return pickle.loads(content, **encoding)
         else:
             nsec = 0.5 * (2.0 ** float(recurse_depth))
             logger.info("Waiting {0} seconds and trying again".format(nsec))
@@ -514,7 +512,7 @@ def _load(filepath, recurse_depth=0, retry=True):
     try:
         if not joblib_available:
             with open(filepath, 'rb') as f:
-                obj = cPickle.load(f, **encoding)
+                obj = pickle.load(f, **encoding)
         else:
             try:
                 obj = joblib.load(filepath)
@@ -581,7 +579,7 @@ def raise_cannot_open(path):
         The path we cannot open
     """
     pieces = path.split('/')
-    for i in xrange(1, len(pieces) + 1):
+    for i in range(1, len(pieces) + 1):
         so_far = '/'.join(pieces[0:i])
         if not os.path.exists(so_far):
             if i == 1:

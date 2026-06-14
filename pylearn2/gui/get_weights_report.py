@@ -5,8 +5,6 @@
 """
 import logging
 
-from theano.compat.six.moves import input
-
 from pylearn2.utils import serial
 from pylearn2.gui import patch_viewer
 from pylearn2.config import yaml_parse

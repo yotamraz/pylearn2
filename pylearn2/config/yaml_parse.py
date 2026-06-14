@@ -10,7 +10,6 @@ import logging
 import warnings
 import re
 
-from theano.compat import six
 
 SCIENTIFIC_NOTATION_REGEXP = r'^[\-\+]?(\d+\.?\d*|\d*\.?\d+)?[eE][\-\+]?\d+$'
 
@@ -118,7 +117,7 @@ def _instantiate_proxy_tuple(proxy, bindings=None):
                 raise NotImplementedError('positional arguments not yet '
                                           'supported in proxy instantiation')
             kwargs = dict((k, _instantiate(v, bindings))
-                          for k, v in six.iteritems(proxy.keywords))
+                          for k, v in proxy.keywords.items())
             obj = checked_call(proxy.callable, kwargs)
         try:
             obj.yaml_src = proxy.yaml_src
@@ -158,12 +157,12 @@ def _instantiate(proxy, bindings=None):
         # Recurse on the keys too, for backward compatibility.
         # Is the key instantiation feature ever actually used, by anyone?
         return dict((_instantiate(k, bindings), _instantiate(v, bindings))
-                    for k, v in six.iteritems(proxy))
+                    for k, v in proxy.items())
     elif isinstance(proxy, list):
         return [_instantiate(v, bindings) for v in proxy]
     # In the future it might be good to consider a dict argument that provides
     # a type->callable mapping for arbitrary transformations like this.
-    elif isinstance(proxy, six.string_types):
+    elif isinstance(proxy, str):
         return preprocess(proxy)
     else:
         return proxy
@@ -203,11 +202,16 @@ def load(stream, environ=None, instantiate=True, **kwargs):
         initialize()
     additional_environ = environ
 
-    if isinstance(stream, six.string_types):
+    if isinstance(stream, str):
         string = stream
     else:
         string = stream.read()
 
+    # PyYAML >= 6.0 requires an explicit Loader. pylearn2's YAML system uses
+    # !obj: tags that instantiate arbitrary Python objects, so we use the
+    # UnsafeLoader which preserves the pre-6.0 behaviour.
+    if 'Loader' not in kwargs:
+        kwargs['Loader'] = yaml.UnsafeLoader
     proxy_graph = yaml.load(string, **kwargs)
     if instantiate:
         return _instantiate(proxy_graph)
@@ -361,7 +365,7 @@ def multi_constructor_obj(loader, tag_suffix, node):
     assert hasattr(mapping, 'values')
 
     for key in mapping.keys():
-        if not isinstance(key, six.string_types):
+        if not isinstance(key, str):
             message = "Received non string object (%s) as " \
                       "key in mapping." % str(key)
             raise TypeError(message)

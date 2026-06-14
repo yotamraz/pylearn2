@@ -251,11 +251,16 @@ def train(config, level_name=None, timestamp=None, time_budget=None,
         train_obj.main_loop(time_budget=time_budget)
 
 
-if __name__ == "__main__":
-    """
-    See module-level docstring for a description of the script.
-    """
+def main():
+    """Entry point for the pylearn2-train console script."""
     parser = make_argument_parser()
     args = parser.parse_args()
     train(args.config, args.level_name, args.timestamp, args.time_budget,
           args.verbose_logging, args.debug)
+
+
+if __name__ == "__main__":
+    """
+    See module-level docstring for a description of the script.
+    """
+    main()

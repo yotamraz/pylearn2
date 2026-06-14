@@ -4,8 +4,6 @@
 
     WRITEME
 """
-from __future__ import print_function
-
 __authors__ = "Ian Goodfellow"
 __copyright__ = "Copyright 2010-2012, Universite de Montreal"
 __credits__ = ["Ian Goodfellow"]
@@ -15,7 +13,6 @@ __email__ = "pylearn-dev@googlegroups"
 
 import argparse
 import numpy as np
-from theano.compat.six.moves import xrange
 from pylearn2.gui import patch_viewer
 from pylearn2.config import yaml_parse
 
@@ -68,12 +65,12 @@ def show_examples(path, rows, cols, rescale='global', out=None):
     else:
         # obj is a Model
         model = obj
-        from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
-        theano_rng = RandomStreams(42)
+        from pytensor.tensor.random.utils import RandomStream as RandomStreams
+        theano_rng = RandomStreams(seed=42)
         design_examples_var = model.random_design_matrix(
             batch_size=rows * cols, theano_rng=theano_rng
         )
-        from theano import function
+        from pytensor import function
         print('compiling sampling function')
         f = function([], design_examples_var)
         print('sampling')
@@ -83,7 +80,7 @@ def show_examples(path, rows, cols, rescale='global', out=None):
         examples = dataset.get_topological_view(design_examples)
 
     norms = np.asarray([np.sqrt(np.sum(np.square(examples[i, :])))
-                        for i in xrange(examples.shape[0])])
+                        for i in range(examples.shape[0])])
     print('norms of examples: ')
     print('\tmin: ', norms.min())
     print('\tmean: ', norms.mean())
@@ -118,7 +115,7 @@ def show_examples(path, rows, cols, rescale='global', out=None):
     pv = patch_viewer.PatchViewer((rows, cols), examples.shape[1:3],
                                   is_color=is_color)
 
-    for i in xrange(rows*cols):
+    for i in range(rows*cols):
         pv.add_patch(examples[i, :, :, :], activation=0.0,
                      rescale=patch_rescale)
 
@@ -128,7 +125,8 @@ def show_examples(path, rows, cols, rescale='global', out=None):
         pv.save(out)
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the pylearn2-show-examples console script."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--rows', default=20, type=int)
@@ -143,3 +141,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     show_examples(args.path, args.rows, args.cols, args.rescale, args.out)
+
+
+if __name__ == "__main__":
+    main()

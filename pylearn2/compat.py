@@ -1,33 +1,16 @@
 """
 Compatibility layer
 """
-from theano.compat import six
+from collections import OrderedDict
 
-
-__all__ = ('OrderedDict', )
-
-
-if six.PY3:
-    from collections import OrderedDict
-else:
-    from theano.compat import OrderedDict
+__all__ = ('OrderedDict', 'first_key', 'first_value')
 
 
 def first_key(obj):
-    """ Return the first key
-
-    Parameters
-    ----------
-    obj: dict-like object
-    """
-    return six.next(six.iterkeys(obj))
+    """Return the first key of a dict-like object."""
+    return next(iter(obj))
 
 
 def first_value(obj):
-    """ Return the first value
-
-    Parameters
-    ----------
-    obj: dict-like object
-    """
-    return six.next(six.itervalues(obj))
+    """Return the first value of a dict-like object."""
+    return next(iter(obj.values()))

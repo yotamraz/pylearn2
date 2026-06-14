@@ -2,14 +2,10 @@
 
 """
 
-from __future__ import print_function
-
 import inspect
-from nose.plugins.skip import SkipTest
+from unittest import SkipTest
 import re
 import sys
-
-from theano.compat import six
 
 
 class Reader(object):
@@ -364,7 +360,7 @@ class NumpyDocString(object):
         idx = self['index']
         out = []
         out += ['.. index:: %s' % idx.get('default','')]
-        for section, references in six.iteritems(idx):
+        for section, references in idx.items():
             if section == 'default':
                 continue
             out += ['   :%s: %s' % (section, ', '.join(references))]
@@ -427,7 +423,9 @@ def indent(str,indent=4):
 class NumpyFunctionDocString(NumpyDocString):
     def __init__(self, docstring, function):
         super(NumpyFunctionDocString, self).__init__(docstring)
-        args, varargs, keywords, defaults = inspect.getargspec(function)
+        _spec = inspect.getfullargspec(function)
+        args, varargs, keywords, defaults = (
+            _spec.args, _spec.varargs, _spec.varkw, _spec.defaults)
         if (args and args != ['self']) or varargs or keywords or defaults:
             self.has_parameters = True
         else:
@@ -484,8 +482,9 @@ class NumpyClassDocString(NumpyDocString):
             # (e.g. the function is implemented in C), getargspec will fail
             if not inspect.ismethod(methods['__init__']):
                 return
-            args, varargs, keywords, defaults = inspect.getargspec(
-                methods['__init__'])
+            _spec = inspect.getfullargspec(methods['__init__'])
+            args, varargs, keywords, defaults = (
+                _spec.args, _spec.varargs, _spec.varkw, _spec.defaults)
             if (args and args != ['self']) or varargs or keywords or defaults:
                 self.has_parameters = True
 
@@ -595,7 +594,7 @@ class SphinxDocString(NumpyDocString):
         idx = self['index']
         out = []
         out += ['.. index:: %s' % idx.get('default','')]
-        for section, references in six.iteritems(idx):
+        for section, references in idx.items():
             if section == 'default':
                 continue
             out += ['   :%s: %s' % (section, ', '.join(references))]
@@ -637,9 +636,8 @@ class FunctionDoc(object):
         else:
             try:
                 # try to read signature
-                argspec = inspect.getargspec(self._f)
-                argspec = inspect.formatargspec(*argspec)
-                argspec = argspec.replace('*','\*')
+                argspec = str(inspect.signature(self._f))
+                argspec = argspec.replace('*', r'\*')
                 out += header('%s%s' % (self._f.__name__, argspec), '-')
             except TypeError as e:
                 out += '%s\n' % header('**%s()**'  % self._f.__name__, '-')
@@ -738,7 +736,7 @@ def handle_class(val, class_name):
         # Get public methods and parse their docstrings
         methods = dict(((name, func) for name, func in inspect.getmembers(val)
                         if not name.startswith('_') and callable(func) and type(func) is not type))
-        for m_name, method in six.iteritems(methods):
+        for m_name, method in methods.items():
             # skip error check if the method was inherited
             # from a parent class (which means it wasn't
             # defined in this source file)
@@ -787,7 +785,7 @@ def docstring_errors(filename, global_dict=None):
         raise AssertionError("Couldn't verify format of " + filename +
                 "due to SkipTest")
     all_errors = []
-    for key, val in six.iteritems(global_dict):
+    for key, val in global_dict.items():
         if not key.startswith('_'):
             module_name = ""
             if hasattr(inspect.getmodule(val), '__name__'):
