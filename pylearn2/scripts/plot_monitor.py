@@ -9,8 +9,6 @@ all of their monitoring channels and prompts the user to select
 a subset of them to be plotted.
 
 """
-from __future__ import print_function
-
 __authors__ = "Ian Goodfellow, Harm Aarts"
 __copyright__ = "Copyright 2010-2012, Universite de Montreal"
 __credits__ = ["Ian Goodfellow"]
@@ -22,9 +20,8 @@ import gc
 import numpy as np
 import sys
 
-from theano.compat.six.moves import input, xrange
 from pylearn2.utils import serial
-from theano.printing import _TagGenerator
+from pytensor.printing import _TagGenerator
 from pylearn2.utils.string_utils import number_aware_alphabetical_key
 from pylearn2.utils import contains_nan, contains_inf
 import argparse
@@ -39,7 +36,7 @@ def unique_substring(s, other, min_size=1):
     """
     size = min(len(s), min_size)
     while size <= len(s):
-        for pos in xrange(0,len(s)-size+1):
+        for pos in range(0,len(s)-size+1):
             rval = s[pos:pos+size]
             fail = False
             for o in other:
@@ -156,10 +153,10 @@ def main():
                     for channel in channels.values():
                         k = 5
                         new_val_record = []
-                        for i in xrange(len(channel.val_record)):
+                        for i in range(len(channel.val_record)):
                             new_val = 0.
                             count = 0.
-                            for j in xrange(max(0, i-k), i+1):
+                            for j in range(max(0, i-k), i+1):
                                 new_val += channel.val_record[j]
                                 count += 1.
                             new_val_record.append(new_val / count)
@@ -200,7 +197,7 @@ def main():
                         quit(-1)
 
                     found = False
-                    for i in xrange(len(sorted_codes)):
+                    for i in range(len(sorted_codes)):
                         if sorted_codes[i] == rng[0]:
                             found = True
                             break
@@ -210,7 +207,7 @@ def main():
                         quit(-1)
 
                     found = False
-                    for j in xrange(i,len(sorted_codes)):
+                    for j in range(i,len(sorted_codes)):
                         if sorted_codes[j] == rng[1]:
                             found = True
                             break

@@ -4,8 +4,6 @@
 
     WRITEME
 """
-from __future__ import print_function
-
 __authors__ = "Ian Goodfellow"
 __copyright__ = "Copyright 2010-2012, Universite de Montreal"
 __credits__ = ["Ian Goodfellow"]

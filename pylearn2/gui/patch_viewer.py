@@ -1,10 +1,7 @@
 """
 Functionality for display and saving images of collections of images patches.
 """
-from __future__ import division
-
 import numpy as np
-from theano.compat.six.moves import xrange
 from pylearn2.datasets.dense_design_matrix import DefaultViewConverter
 from pylearn2.utils.image import Image, ensure_Image
 from pylearn2.utils.image import show
@@ -86,7 +83,7 @@ def make_viewer(mat, grid_shape=None, patch_shape=None,
         view_converter = DefaultViewConverter(topo_shape)
         topo_view = view_converter.design_mat_to_topo_view(mat)
     rval = PatchViewer(grid_shape, patch_shape, pad=pad, is_color = is_color)
-    for i in xrange(mat.shape[0]):
+    for i in range(mat.shape[0]):
         if activation is not None:
             if hasattr(activation[0], '__iter__'):
                 act = [a[i] for a in activation]
@@ -180,7 +177,7 @@ class PatchViewer(object):
             WRITEME
         """
         if self.is_color:
-            for i in xrange(3):
+            for i in range(3):
                 self.image[:, :, i] = self.background[i] * .5 + .5
         else:
             self.image[:] = self.background * .5 + .5
@@ -355,7 +352,7 @@ class PatchViewer(object):
             if scale == 0:
                 scale = 1
             myvid /= scale
-        for i in xrange(vid.shape[2]):
+        for i in range(vid.shape[2]):
             self.add_patch(myvid[:, :, i], rescale=False, recenter=recenter)
 
     def show(self):
@@ -407,7 +404,7 @@ class PatchViewer(object):
             best_c = -1
             best_ratio = 0
 
-            for r in xrange(1, int(np.sqrt(n)) + 1):
+            for r in range(1, int(np.sqrt(n)) + 1):
                 if n % r != 0:
                     continue
                 c = n // r
