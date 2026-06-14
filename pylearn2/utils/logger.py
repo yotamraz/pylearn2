@@ -27,8 +27,6 @@ __maintainer__ = "David Warde-Farley"
 import logging
 import sys
 from logging import Handler, Formatter
-from theano.compat import six
-from theano.compat.six.moves import xrange
 
 
 class CustomFormatter(Formatter):
@@ -187,7 +185,7 @@ class CustomStreamHandler(Handler):
                 stream.write(fs % msg)
             else:
                 try:
-                    if (isinstance(msg, six.text_type) and
+                    if (isinstance(msg, str) and
                             getattr(stream, 'encoding', None)):
                         try:
                             stream.write(fs % msg)
@@ -304,7 +302,7 @@ def newline(logger, nb_blank_lines=1):
 
     logger.addHandler(handler)
 
-    for i in xrange(nb_blank_lines):
+    for i in range(nb_blank_lines):
         logger.info('')
 
     logger.removeHandler(handler)
