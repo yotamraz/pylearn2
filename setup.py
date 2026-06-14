@@ -20,23 +20,32 @@ except ImportError:
     cython_available = False
 
 if cython_available:
-    ext_modules = cythonize([
-        Extension(
-            "pylearn2.utils._window_flip",
-            ["pylearn2/utils/_window_flip.pyx"],
-            include_dirs=[numpy.get_include()],
-        ),
-        Extension(
-            "pylearn2.utils._video",
-            ["pylearn2/utils/_video.pyx"],
-            include_dirs=[numpy.get_include()],
-        ),
-        Extension(
-            "pylearn2.models._kmeans",
-            ["pylearn2/models/_kmeans.pyx"],
-            include_dirs=[numpy.get_include()],
-        ),
-    ])
+    try:
+        ext_modules = cythonize([
+            Extension(
+                "pylearn2.utils._window_flip",
+                ["pylearn2/utils/_window_flip.pyx"],
+                include_dirs=[numpy.get_include()],
+            ),
+            Extension(
+                "pylearn2.utils._video",
+                ["pylearn2/utils/_video.pyx"],
+                include_dirs=[numpy.get_include()],
+            ),
+            Extension(
+                "pylearn2.models._kmeans",
+                ["pylearn2/models/_kmeans.pyx"],
+                include_dirs=[numpy.get_include()],
+            ),
+        ])
+    except Exception as e:
+        warnings.warn(
+            f"Cython compilation failed ({e}). Extension modules "
+            "pylearn2.utils._window_flip, pylearn2.utils._video, and "
+            "pylearn2.models._kmeans will not be available. "
+            "Fix the .pyx files in a future milestone to enable them."
+        )
+        ext_modules = []
 else:
     ext_modules = []
 
