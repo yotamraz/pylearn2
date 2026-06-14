@@ -423,7 +423,9 @@ def indent(str,indent=4):
 class NumpyFunctionDocString(NumpyDocString):
     def __init__(self, docstring, function):
         super(NumpyFunctionDocString, self).__init__(docstring)
-        args, varargs, keywords, defaults = inspect.getargspec(function)
+        _spec = inspect.getfullargspec(function)
+        args, varargs, keywords, defaults = (
+            _spec.args, _spec.varargs, _spec.varkw, _spec.defaults)
         if (args and args != ['self']) or varargs or keywords or defaults:
             self.has_parameters = True
         else:
@@ -480,8 +482,9 @@ class NumpyClassDocString(NumpyDocString):
             # (e.g. the function is implemented in C), getargspec will fail
             if not inspect.ismethod(methods['__init__']):
                 return
-            args, varargs, keywords, defaults = inspect.getargspec(
-                methods['__init__'])
+            _spec = inspect.getfullargspec(methods['__init__'])
+            args, varargs, keywords, defaults = (
+                _spec.args, _spec.varargs, _spec.varkw, _spec.defaults)
             if (args and args != ['self']) or varargs or keywords or defaults:
                 self.has_parameters = True
 
@@ -633,9 +636,8 @@ class FunctionDoc(object):
         else:
             try:
                 # try to read signature
-                argspec = inspect.getargspec(self._f)
-                argspec = inspect.formatargspec(*argspec)
-                argspec = argspec.replace('*','\*')
+                argspec = str(inspect.signature(self._f))
+                argspec = argspec.replace('*', r'\*')
                 out += header('%s%s' % (self._f.__name__, argspec), '-')
             except TypeError as e:
                 out += '%s\n' % header('**%s()**'  % self._f.__name__, '-')

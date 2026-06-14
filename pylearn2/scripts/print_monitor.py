@@ -34,6 +34,11 @@ def print_monitor(args):
             print(key, ':', channels[key].val_record[-1])
 
 
-if __name__ == '__main__':
+def main():
+    """Entry point for the pylearn2-print-monitor console script."""
     import sys
     print_monitor(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    main()

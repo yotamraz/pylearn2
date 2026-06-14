@@ -128,7 +128,8 @@ def show_examples(path, rows, cols, rescale='global', out=None):
         pv.save(out)
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the pylearn2-show-examples console script."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--rows', default=20, type=int)
@@ -143,3 +144,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     show_examples(args.path, args.rows, args.cols, args.rescale, args.out)
+
+
+if __name__ == "__main__":
+    main()

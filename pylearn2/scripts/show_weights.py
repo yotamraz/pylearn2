@@ -46,7 +46,12 @@ def make_argument_parser():
     parser.add_argument("path")
     return parser
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the pylearn2-show-weights console script."""
     parser = make_argument_parser()
     args = parser.parse_args()
     show_weights(args.path, args.rescale, args.border, args.out)
+
+
+if __name__ == "__main__":
+    main()

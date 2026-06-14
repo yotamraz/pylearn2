@@ -289,15 +289,20 @@ def gpu_mem_free():
     Returns
     -------
     megs_free : float
-        Number of megabytes of memory free on the GPU used by Theano
+        Number of megabytes of memory free on the GPU used by PyTensor
+
+    Raises
+    ------
+    NotImplementedError
+        PyTensor's GPU backend does not expose a direct mem_info() API.
+        Use pytensor.config.device and GPU-specific tooling instead.
     """
-    global cuda
-    if cuda is None:
-        try:
-            from pytensor.sandbox import cuda
-        except ImportError:
-            cuda = None
-    return cuda.mem_info()[0]/1024./1024
+    raise NotImplementedError(
+        "gpu_mem_free() is not available under PyTensor. "
+        "The theano.sandbox.cuda API no longer exists. "
+        "Use PyTensor's native GPU backend (pytensor.config.device='cuda') "
+        "and GPU-specific memory utilities instead."
+    )
 
 
 class _ElemwiseNoGradient(pytensor.tensor.elemwise.Elemwise):
