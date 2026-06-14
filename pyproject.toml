@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "Cython>=3.0", "numpy>=1.24"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "pylearn2"
+version = "0.1.0"
+requires-python = ">=3.12"
+description = "A machine learning library built on top of PyTensor."
+license = {text = "BSD 3-Clause License"}
+dependencies = [
+    "pytensor>=2.38",
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0", "pytest-cov", "pycodestyle"]
+
+[project.scripts]
+pylearn2-train = "pylearn2.scripts.train:main"
+pylearn2-plot-monitor = "pylearn2.scripts.plot_monitor:main"
+pylearn2-print-monitor = "pylearn2.scripts.print_monitor:main"
+pylearn2-show-examples = "pylearn2.scripts.show_examples:main"
+pylearn2-show-weights = "pylearn2.scripts.show_weights:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pylearn2*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.cu", "*.cuh", "*.h"]
