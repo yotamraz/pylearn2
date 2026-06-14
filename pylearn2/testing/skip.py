@@ -8,9 +8,8 @@ __credits__ = ["Ian Goodfellow"]
 __license__ = "3-clause BSD"
 __maintainer__ = "LISA Lab"
 __email__ = "pylearn-dev@googlegroups"
-from nose.plugins.skip import SkipTest
+from unittest import SkipTest
 import os
-from theano.sandbox import cuda
 
 scipy_works = True
 try:
@@ -54,8 +53,13 @@ def skip_if_no_sklearn():
 
 
 def skip_if_no_gpu():
-    if cuda.cuda_available == False:
-        raise SkipTest('Optional package cuda disabled.')
+    try:
+        import pytensor
+        gpu_available = pytensor.config.device.startswith('cuda') or pytensor.config.device == 'gpu'
+    except Exception:
+        gpu_available = False
+    if not gpu_available:
+        raise SkipTest('No GPU device available.')
 
 
 def skip_if_no_h5py():
