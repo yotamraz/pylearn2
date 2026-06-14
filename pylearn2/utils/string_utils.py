@@ -90,7 +90,7 @@ def find_number(s):
         number found otherwise.
     """
 
-    r = re.search('[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?', s)
+    r = re.search(r'[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?', s)
     if r is not None:
         return r.span(0)
     return None

@@ -207,6 +207,11 @@ def load(stream, environ=None, instantiate=True, **kwargs):
     else:
         string = stream.read()
 
+    # PyYAML >= 6.0 requires an explicit Loader. pylearn2's YAML system uses
+    # !obj: tags that instantiate arbitrary Python objects, so we use the
+    # UnsafeLoader which preserves the pre-6.0 behaviour.
+    if 'Loader' not in kwargs:
+        kwargs['Loader'] = yaml.UnsafeLoader
     proxy_graph = yaml.load(string, **kwargs)
     if instantiate:
         return _instantiate(proxy_graph)
